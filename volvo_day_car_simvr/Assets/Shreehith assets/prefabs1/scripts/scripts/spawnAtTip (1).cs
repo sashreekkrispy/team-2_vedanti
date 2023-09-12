@@ -1,56 +1,51 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.Burst.CompilerServices;
 using UnityEngine;
+using UnityEngine.XR;
 
 public class spawnAtTip : MonoBehaviour
 {
-    public GameObject prefabToSpawn;                    //first set
+    public GameObject prefabToSpawn;
     public GameObject parentPrefab;
     private Vector3 banKai;
-    
-    Vector3 mousePosition;
 
-                                                      //second set
     GameObject snapparent;
     Vector3 offset;
 
-    // Start is called before the first frame update
+    private bool triggerPressed = false; // Track the trigger button state
+
     void Start()
     {
-        
+        // Initialize Input System for VR
+        InputDevice device = InputDevices.GetDeviceAtXRNode(XRNode.RightHand); // Change XRNode to LeftHand if needed
+        device.TryGetFeatureValue(CommonUsages.triggerButton, out triggerPressed);
     }
 
-    
-    
-
-    // Update is called once per frame
     void Update()
     {
-        banKai = this.gameObject.transform.GetChild(1).transform.position;
-        if (Input.GetMouseButtonDown(0))
+        // Check if the trigger button is pressed
+        if (triggerPressed)
         {
-            Instantiate(prefabToSpawn, banKai, Quaternion.identity ,parentPrefab.transform);
-            
+            banKai = this.gameObject.transform.GetChild(1).transform.position;
+            Instantiate(prefabToSpawn, banKai, Quaternion.identity, parentPrefab.transform);
         }
     }
 
     void OnTriggerStay(Collider collider)
     {
-
         if (collider.gameObject.tag == "plate" || collider.gameObject.tag == "cuts5" || collider.gameObject.tag == "cuts6" || collider.gameObject.tag == "cuts7" || collider.gameObject.tag == "cuts8")
         {
-            
             snapparent = collider.gameObject;
             offset = transform.position - snapparent.transform.position;
-            
         }
+
         if (collider.gameObject.tag == "Test")
         {
-            Instantiate(prefabToSpawn, banKai, Quaternion.identity);
-            Debug.Log("lol");
+            if (triggerPressed)
+            {
+                Instantiate(prefabToSpawn, banKai, Quaternion.identity);
+                Debug.Log("lol");
+            }
         }
     }
-    
-    
 }
