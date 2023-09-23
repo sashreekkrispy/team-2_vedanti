@@ -1,56 +1,53 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.Burst.CompilerServices;
 using UnityEngine;
+using UnityEngine.XR;
 
 public class spawnAtTip : MonoBehaviour
 {
-    public GameObject prefabToSpawn;                    //first set
+    public GameObject prefabToSpawn;
     public GameObject parentPrefab;
     private Vector3 banKai;
-    
-    Vector3 mousePosition;
 
-                                                      //second set
-    GameObject snapparent;
-    Vector3 offset;
+    private GameObject snapparent;
+    private Vector3 offset;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    private bool triggerPressed = false; // Track the trigger button state
 
-    
-    
-
-    // Update is called once per frame
     void Update()
     {
-        banKai = this.gameObject.transform.GetChild(1).transform.position;
-        if (Input.GetMouseButtonDown(0))
+        // Initialize Input System for VR and check if the trigger button is pressed
+        InputDevice device = InputDevices.GetDeviceAtXRNode(XRNode.RightHand); // Change XRNode to LeftHand if needed
+        device.TryGetFeatureValue(CommonUsages.triggerButton, out triggerPressed);
+
+        if (triggerPressed)
         {
-            Instantiate(prefabToSpawn, banKai, Quaternion.identity ,parentPrefab.transform);
-            
+            Transform child = this.gameObject.transform.GetChild(1);
+            if (child != null)
+            {
+                banKai = child.position;
+                Instantiate(prefabToSpawn, banKai, Quaternion.identity, parentPrefab.transform);
+            }
+            else
+            {
+                Debug.LogWarning("Child object at index 1 does not exist.");
+            }
         }
     }
 
     void OnTriggerStay(Collider collider)
     {
-
-        if (collider.gameObject.tag == "plate" || collider.gameObject.tag == "cuts5" || collider.gameObject.tag == "cuts6" || collider.gameObject.tag == "cuts7" || collider.gameObject.tag == "cuts8")
+        string tag = collider.gameObject.tag;
+        if (tag == "plate" || tag == "cuts5" || tag == "cuts6" || tag == "cuts7" || tag == "cuts8")
         {
-            
             snapparent = collider.gameObject;
             offset = transform.position - snapparent.transform.position;
-            
         }
-        if (collider.gameObject.tag == "Test")
+
+        if (tag == "Test" && triggerPressed)
         {
             Instantiate(prefabToSpawn, banKai, Quaternion.identity);
             Debug.Log("lol");
         }
     }
-    
-    
 }
